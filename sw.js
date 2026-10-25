@@ -1,4 +1,4 @@
-const C='tutor-v3';
+const C='tutor-v4';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>
 Promise.all(['./','index.html','manifest.json','icon.png'].map(u=>c.add(u).catch(()=>{})))
 ).then(()=>self.skipWaiting()))});
