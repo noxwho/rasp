@@ -94,7 +94,8 @@ function sp(p,val){const a=p.split('/');let o=DB;for(let i=0;i<a.length-1;i++)o=
 async function W(p,val){lw=Date.now();sp(p,val);sv();ren();return net(val==null?'DELETE':'PUT',p,val)}
 async function U(p,o){lw=Date.now();for(const k in o)sp(p+'/'+k,o[k]);sv();ren();return net('PATCH',p,o)}
 async function poll(){if(!cu()||Date.now()-lw<3000)return;const d=await net('GET','');if(d!==undefined&&Date.now()-lw>=3000){DB=d||{};sv();if(me){if(!DB.users||!DB.users[me.id])return out();Object.assign(me,DB.users[me.id])}ren()}}
-const hs=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+function sha256(ascii){var mp=Math.pow,mw=mp(2,32),i,j,res='',words=[],abl=ascii.length*8,hash=sha256.h=sha256.h||[],k=sha256.k=sha256.k||[],pc=k.length,comp={};for(var cnd=2;pc<64;cnd++){if(!comp[cnd]){for(i=0;i<313;i+=cnd)comp[i]=cnd;hash[pc]=(mp(cnd,.5)*mw)|0;k[pc++]=(mp(cnd,1/3)*mw)|0}}ascii+='\x80';while(ascii.length%64-56)ascii+='\x00';for(i=0;i<ascii.length;i++){j=ascii.charCodeAt(i);words[i>>2]|=j<<((3-i)%4)*8}words[words.length]=(abl/mw)|0;words[words.length]=abl;for(j=0;j<words.length;){var w=words.slice(j,j+=16),oh=hash.slice(0,8);for(i=0;i<64;i++){var w15=w[i-15],w2=w[i-2],a=hash[0],e=hash[4],t1=hash[7]+((e>>>6|e<<26)^(e>>>11|e<<21)^(e>>>25|e<<7))+((e&hash[5])^(~e&hash[6]))+k[i]+(w[i]=i<16?w[i]:(w[i-16]+((w15>>>7|w15<<25)^(w15>>>18|w15<<14)^(w15>>>3))+w[i-7]+((w2>>>17|w2<<15)^(w2>>>19|w2<<13)^(w2>>>10)))|0),t2=((a>>>2|a<<30)^(a>>>13|a<<19)^(a>>>22|a<<10))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));hash=[(t1+t2)|0].concat(hash);hash[4]=(hash[4]+t1)|0}for(i=0;i<8;i++)hash[i]=(hash[i]+oh[i])|0}for(i=0;i<8;i++){for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;res+=(b<16?0:'')+b.toString(16)}}return res}
+const hs=async s=>sha256(unescape(encodeURIComponent(s)));
 const ntf=(to,tx)=>W('notif/'+uid(),{to,tx,ts:Date.now(),rd:0});
 const st=id=>D.students.find(s=>s.id==id)||{name:'?',surname:'',exam:''},nm=id=>st(id).name+' '+st(id).surname;
 const pc=h=>Math.round(h.res.sc/h.res.tot*100);
@@ -159,16 +160,16 @@ if(PG[pg].l)lv.innerHTML=PG[pg].l()}
 // тема
 function ath(){const t=TH(),d=t.m=='dark'||(t.m=='auto'&&matchMedia('(prefers-color-scheme:dark)').matches),s=document.documentElement;s.dataset.theme=d?'dark':'light';$('meta[name=theme-color]').content=d?'#000':'#f2f2f7'}
 function sth(k,x){const t=TH();t[k]=x;localStorage.th=JSON.stringify(t);ath();go('th')}
-matchMedia('(prefers-color-scheme:dark)').addEventListener('change',ath);
+{var mq=matchMedia('(prefers-color-scheme:dark)');if(mq.addEventListener)mq.addEventListener('change',ath);else if(mq.addListener)mq.addListener(ath);}
 // вход
-function showAu(){me=null;pg=null;$('#app').hidden=true;const s=au.r=='s',n=au.m=='up';$('#au').hidden=false;$('#au').innerHTML=`<h2 style="margin-top:40px;font-size:34px;font-weight:800">Репетитор</h2><div class="card"><div class="sg">${[['s','Я ученик'],['t','Я учитель']].map(([k,t])=>`<button class="${au.r==k?'p':''}" onclick="au.r='${k}';showAu()">${t}</button>`).join('')}</div><div class="sg">${[['in','Вход'],['up','Регистрация']].map(([k,t])=>`<button class="${au.m==k?'p':''}" onclick="au.m='${k}';showAu()">${t}</button>`).join('')}</div>${n&&s?'<label>Имя<input id="an" autocomplete="given-name"></label>':''}<label>Фамилия<input id="as" autocomplete="family-name"></label><label>Пароль<input id="ap" type="password" autocomplete="${n?'new-password':'current-password'}"></label>${n&&s?'<label>Экзамен<select id="ae"><option>ОГЭ</option><option>ЕГЭ</option></select></label>':''}<button class="p" onclick="auth()">${n?'Зарегистрироваться':'Войти'}</button></div>`}
-async function auth(){const sn=v('#as').trim(),pw=v('#ap');if(!sn||pw.length<4)return toast('Введите фамилию и пароль (от 4 символов)');
+function showAu(){me=null;pg=null;$('#app').hidden=true;const s=au.r=='s',n=au.m=='up';$('#au').hidden=false;$('#au').innerHTML=`<h2 style="margin-top:40px;font-size:34px;font-weight:800">Репетитор</h2><div class="card"><div class="sg">${[['s','Я ученик'],['t','Я учитель']].map(([k,t])=>`<button class="${au.r==k?'p':''}" onclick="au.r='${k}';showAu()">${t}</button>`).join('')}</div><div class="sg">${[['in','Вход'],['up','Регистрация']].map(([k,t])=>`<button class="${au.m==k?'p':''}" onclick="au.m='${k}';showAu()">${t}</button>`).join('')}</div>${n&&s?'<label>Имя<input id="an" autocomplete="given-name"></label>':''}<label>Фамилия<input id="as" autocomplete="family-name"></label><label>Пароль<input id="ap" type="password" autocomplete="${n?'new-password':'current-password'}"></label>${n&&s?'<label>Экзамен<select id="ae"><option>ОГЭ</option><option>ЕГЭ</option></select></label>':''}<button class="p" onclick="auth()">${n?'Зарегистрироваться':'Войти'}</button></div>`+(au.r=='t'?'<p class="m" style="font-size:13px">Чтобы видеть учеников с других устройств, у всех должен быть один адрес Firebase: «Настройки → Синхронизация».</p>':'')}
+async function auth(){try{const sn=v('#as').trim(),pw=v('#ap');if(!sn||pw.length<4)return toast('Введите фамилию и пароль (от 4 символов)');
 if(cu()){const d=await net('GET','');if(d!==undefined)DB=d||{}}
 const k=au.r+'_'+sn.toLowerCase().replace(/\s+/g,''),h=await hs(k+pw),u=(DB.users||{})[k];
 if(au.m=='in'){if(!u||u.h!=h)return toast('Неверная фамилия или пароль')}
 else{if(u)return toast('Эта фамилия уже зарегистрирована');if(au.r=='t'&&A('users').some(x=>x.r=='t'))return toast('Учитель уже зарегистрирован — выполните вход');
 const n=au.r=='s'?v('#an').trim():'';if(au.r=='s'&&!n)return toast('Введите имя');await W('users/'+k,{r:au.r,surname:sn,name:n,exam:au.r=='s'?v('#ae'):'',h,ts:Date.now()})}
-localStorage.ss=k;boot()}
+localStorage.ss=k;boot()}catch(x){toast('Ошибка: '+(x&&x.message||x))}}
 function boot(){const k=localStorage.ss,u=(DB.users||{})[k];if(!u)return showAu();me={id:k,...u};T=u.r=='t';$('#au').hidden=true;$('#app').hidden=false;go(T?'td':'cal')}
 function out(){delete localStorage.ss;showAu()}
 // действия

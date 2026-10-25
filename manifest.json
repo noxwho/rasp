@@ -1,15 +1,16 @@
 {
- "name": "Репетитор",
- "short_name": "Репетитор",
- "start_url": "./",
- "display": "standalone",
- "background_color": "#f2f2f7",
- "theme_color": "#f2f2f7",
- "icons": [
-  {
-   "src": "icon.png",
-   "sizes": "180x180",
-   "type": "image/png"
-  }
- ]
+  "name": "Репетитор",
+  "short_name": "Репетитор",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "lang": "ru"
 }
