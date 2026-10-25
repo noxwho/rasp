@@ -162,14 +162,38 @@ function ath(){const t=TH(),d=t.m=='dark'||(t.m=='auto'&&matchMedia('(prefers-co
 function sth(k,x){const t=TH();t[k]=x;localStorage.th=JSON.stringify(t);ath();go('th')}
 {var mq=matchMedia('(prefers-color-scheme:dark)');if(mq.addEventListener)mq.addEventListener('change',ath);else if(mq.addListener)mq.addListener(ath);}
 // вход
-function showAu(){me=null;pg=null;$('#app').hidden=true;const s=au.r=='s',n=au.m=='up';$('#au').hidden=false;$('#au').innerHTML=`<h2 style="margin-top:40px;font-size:34px;font-weight:800">Репетитор</h2><div class="card"><div class="sg">${[['s','Я ученик'],['t','Я учитель']].map(([k,t])=>`<button class="${au.r==k?'p':''}" onclick="au.r='${k}';showAu()">${t}</button>`).join('')}</div><div class="sg">${[['in','Вход'],['up','Регистрация']].map(([k,t])=>`<button class="${au.m==k?'p':''}" onclick="au.m='${k}';showAu()">${t}</button>`).join('')}</div>${n&&s?'<label>Имя<input id="an" autocomplete="given-name"></label>':''}<label>Фамилия<input id="as" autocomplete="family-name"></label><label>Пароль<input id="ap" type="password" autocomplete="${n?'new-password':'current-password'}"></label>${n&&s?'<label>Экзамен<select id="ae"><option>ОГЭ</option><option>ЕГЭ</option></select></label>':''}<button class="p" onclick="auth()">${n?'Зарегистрироваться':'Войти'}</button></div>`+(au.r=='t'?'<p class="m" style="font-size:13px">Чтобы видеть учеников с других устройств, у всех должен быть один адрес Firebase: «Настройки → Синхронизация».</p>':'')}
-async function auth(){try{const sn=v('#as').trim(),pw=v('#ap');if(!sn||pw.length<4)return toast('Введите фамилию и пароль (от 4 символов)');
-if(cu()){const d=await net('GET','');if(d!==undefined)DB=d||{}}
-const k=au.r+'_'+sn.toLowerCase().replace(/\s+/g,''),h=await hs(k+pw),u=(DB.users||{})[k];
-if(au.m=='in'){if(!u||u.h!=h)return toast('Неверная фамилия или пароль')}
-else{if(u)return toast('Эта фамилия уже зарегистрирована');if(au.r=='t'&&A('users').some(x=>x.r=='t'))return toast('Учитель уже зарегистрирован — выполните вход');
-const n=au.r=='s'?v('#an').trim():'';if(au.r=='s'&&!n)return toast('Введите имя');await W('users/'+k,{r:au.r,surname:sn,name:n,exam:au.r=='s'?v('#ae'):'',h,ts:Date.now()})}
-localStorage.ss=k;boot()}catch(x){toast('Ошибка: '+(x&&x.message||x))}}
+function showAu(){me=null;pg=null;$('#app').hidden=true;const s=au.r=='s',n=au.m=='up';$('#au').hidden=false;$('#au').innerHTML=`<h2 style="margin-top:40px;font-size:34px;font-weight:800">Репетитор</h2><div class="card"><div class="sg">${[['s','Я ученик'],['t','Я учитель']].map(([k,t])=>`<button class="${au.r==k?'p':''}" onclick="au.r='${k}';showAu()">${t}</button>`).join('')}</div><div class="sg">${[['in','Вход'],['up','Регистрация']].map(([k,t])=>`<button class="${au.m==k?'p':''}" onclick="au.m='${k}';showAu()">${t}</button>`).join('')}</div>${n?'<label>Фамилия<input id="as" autocomplete="family-name" required></label><label>Имя<input id="an" autocomplete="given-name" required></label>':''}<label>Электронная почта<input id="ae-mail" type="email" autocomplete="email" inputmode="email" required placeholder="name@example.com"></label><label>Пароль<input id="ap" type="password" autocomplete="${n?'new-password':'current-password'}" required></label>${n&&s?'<label>Экзамен<select id="ae"><option>ОГЭ</option><option>ЕГЭ</option></select></label>':''}<button class="p" onclick="auth()">${n?'Зарегистрироваться':'Войти'}</button></div><p class="m" style="font-size:13px">Вход выполняется по электронной почте и паролю. Код на почту не отправляется.</p>`+(au.r=='t'?'<p class="m" style="font-size:13px">Чтобы видеть учеников с других устройств, у всех должен быть один адрес Firebase: «Настройки → Синхронизация».</p>':'')}
+async function auth(){
+ try{
+  const em=v('#ae-mail').trim().toLowerCase(),pw=v('#ap');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em))return toast('Введите корректную электронную почту');
+  if(pw.length<6)return toast('Пароль должен содержать минимум 6 символов');
+  const remote=!!cu();
+  if(remote){
+   let r;try{r=await fetch(cu()+'/users.json',{cache:'no-store'});}catch(_){throw new Error('Не удалось подключиться к Firebase. Проверьте адрес и интернет.')}
+   if(!r.ok)throw new Error('Firebase отклонил запрос. Проверьте адрес базы и правила доступа (Rules).');
+   const data=await r.json();DB.users=data||{};
+  }
+  const k='u_'+await hs(em),u=(DB.users||{})[k];
+  if(au.m=='in'){
+   if(!u||u.email!==em||u.h!==await hs(k+pw))return toast('Неверная почта или пароль');
+   if(u.r!==au.r)return toast('Выберите правильный тип аккаунта');
+  }else{
+   const sn=v('#as').trim(),n=v('#an').trim();
+   if(!sn||!n)return toast('Введите фамилию и имя');
+   if(u)return toast('Аккаунт с этой почтой уже зарегистрирован');
+   if(au.r=='t'&&A('users').some(x=>x.r=='t'&&x.email))return toast('Учитель уже зарегистрирован — выполните вход');
+   const record={r:au.r,surname:sn,name:n,email:em,exam:au.r=='s'?v('#ae'):'',h:await hs(k+pw),ts:Date.now()};
+   if(remote){
+    let wr;try{wr=await fetch(cu()+'/users/'+k+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});}catch(_){throw new Error('Не удалось сохранить регистрацию в Firebase. Проверьте интернет и правила доступа.')}
+    if(!wr.ok)throw new Error('Firebase не разрешил сохранить аккаунт. Проверьте Rules в настройках базы.');
+    await wr.json();
+   }
+   DB.users=DB.users||{};DB.users[k]=record;sv();
+  }
+  localStorage.ss=k;boot();
+ }catch(x){toast('Ошибка: '+(x&&x.message||'не удалось выполнить запрос'))}
+}
 function boot(){const k=localStorage.ss,u=(DB.users||{})[k];if(!u)return showAu();me={id:k,...u};T=u.r=='t';$('#au').hidden=true;$('#app').hidden=false;go(T?'td':'cal')}
 function out(){delete localStorage.ss;showAu()}
 // действия
